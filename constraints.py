@@ -39,20 +39,21 @@ def certainty_satisfaction(board):
 
     return False
 
-def get_user_input():
-    sudoku_board = []
-    print("Enter the Sudoku puzzle (row by row):")
-    for _ in range(9):
-        row = input().split()
-        row = [int(num) for num in row]
-        sudoku_board.append(row)
-    return sudoku_board
-
 if __name__ == "__main__":
-    user_input_board = get_user_input()
+    sudoku_board = [
+        [5, 3, 0, 0, 7, 0, 0, 0, 0],
+        [6, 0, 0, 1, 9, 5, 0, 0, 0],
+        [0, 9, 8, 0, 0, 0, 0, 6, 0],
+        [8, 0, 0, 0, 6, 0, 0, 0, 3],
+        [4, 0, 0, 8, 0, 3, 0, 0, 1],
+        [7, 0, 0, 0, 2, 0, 0, 0, 6],
+        [0, 6, 0, 0, 0, 0, 2, 8, 0],
+        [0, 0, 0, 4, 1, 9, 0, 0, 5],
+        [0, 0, 0, 0, 8, 0, 0, 7, 9]
+    ]
 
-    if certainty_satisfaction(user_input_board):
+    if certainty_satisfaction(sudoku_board):
         print("Sudoku solution:")
-        print_board(user_input_board)
+        print_board(sudoku_board)
     else:
         print("No solution exists for the given Sudoku.")
