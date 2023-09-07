@@ -1,50 +1,61 @@
-class Rule:
-    def __init__(self, antecedent, consequent, cf):
-        self.antecedent = antecedent  # Antecedent condition (e.g., a list of facts)
-        self.consequent = consequent  # Consequent action (e.g., a fact to assert)
-        self.cf = cf  # Certainty factor
+import numpy as np
 
-class ExpertSystem:
-    def __init__(self):
-        self.rules = []
+# Define fuzzy sets for temperature and weather forecast
+def fuzzy_temperature(temp):
+    cold = max(0, min((50 - temp) / 20, 1))
+    warm = max(0, min((temp - 30) / 20, 1))
+    return cold, warm
 
-    def add_rule(self, rule):
-        self.rules.append(rule)
+def fuzzy_forecast(forecast):
+    sunny = max(0, min((forecast - 70) / 20, 1))
+    rainy = max(0, min((forecast - 30) / 20, 1))
+    return sunny, rainy
 
-    def evaluate(self, facts):
-        result = {}
-        for rule in self.rules:
-            if all(fact in facts for fact in rule.antecedent):
-                # All antecedent conditions are satisfied
-                result[rule.consequent] = rule.cf
+# Define fuzzy rules
+def apply_rules(temperature, forecast):
+    rules = []
 
-        return result
+    # Rule 1: If it's cold and sunny, then go for a picnic (certainty factor 0.8)
+    cold, warm = fuzzy_temperature(temperature)
+    sunny, rainy = fuzzy_forecast(forecast)
+    rules.append(("Go for a picnic", min(cold, sunny), 0.8))
 
-if __name__ == "__main__":
-    # Create an expert system
-    expert_system = ExpertSystem()
+    # Rule 2: If it's warm and rainy, then don't go for a picnic (certainty factor 0.6)
+    rules.append(("Don't go for a picnic", min(warm, rainy), 0.6))
 
-    # Define rules with certainty factors
-    rule1 = Rule(["Sunny"], "PlayTennis", 0.8)
-    rule2 = Rule(["Rainy"], "PlayTennis", -0.6)
+    return rules
 
-    # Add rules to the expert system
-    expert_system.add_rule(rule1)
-    expert_system.add_rule(rule2)
+# Combine evidence using certainty factors
+def combine_evidence(rules):
+    numerator = 0
+    denominator = 0
 
-    # Prompt the user to input facts
-    user_input = input("Enter facts (comma-separated, e.g., Sunny,Rainy): ")
-    user_facts = user_input.split(",")
+    for rule in rules:
+        conclusion, support, certainty_factor = rule
+        numerator += support * certainty_factor
+        denominator += support
 
-    # Evaluate the expert system based on user input
-    result = expert_system.evaluate(user_facts)
+    if denominator == 0:
+        return None
 
-    # Determine the decision based on certainty factors
-    if "PlayTennis" in result:
-        cf_play_tennis = result["PlayTennis"]
-        if cf_play_tennis > 0:
-            print("Let's play tennis!")
-        else:
-            print("It's better not to play tennis.")
+    final_certainty_factor = numerator / denominator
+    return final_certainty_factor
+
+# Main function to make a decision
+def make_decision(temperature, forecast):
+    rules = apply_rules(temperature, forecast)
+    certainty_factor = combine_evidence(rules)
+
+    if certainty_factor is None:
+        return "Cannot make a decision"
+    elif certainty_factor >= 0.5:
+        return "Go for a picnic"
     else:
-        print("No matching rules found.")
+        return "Don't go for a picnic"
+
+# Test the decision-making process
+temperature = 65  # Example temperature
+forecast = 60    # Example weather forecast
+
+decision = make_decision(temperature, forecast)
+print(f"Decision: {decision}")
