@@ -1,61 +1,50 @@
-import numpy as np
+class CertaintyFactorRule:
+    def __init__(self, condition, conclusion, cf):
+        self.condition = condition  # A list of conditions (e.g., ['outdoor', 'team_sport'])
+        self.conclusion = conclusion  # The conclusion (e.g., 'Football' or 'Basketball')
+        self.cf = cf  # Certainty factor for the conclusion
 
-# Define fuzzy sets for temperature and weather forecast
-def fuzzy_temperature(temp):
-    cold = max(0, min((50 - temp) / 20, 1))
-    warm = max(0, min((temp - 30) / 20, 1))
-    return cold, warm
-
-def fuzzy_forecast(forecast):
-    sunny = max(0, min((forecast - 70) / 20, 1))
-    rainy = max(0, min((forecast - 30) / 20, 1))
-    return sunny, rainy
-
-# Define fuzzy rules
-def apply_rules(temperature, forecast):
-    rules = []
-
-    # Rule 1: If it's cold and sunny, then go for a picnic (certainty factor 0.8)
-    cold, warm = fuzzy_temperature(temperature)
-    sunny, rainy = fuzzy_forecast(forecast)
-    rules.append(("Go for a picnic", min(cold, sunny), 0.8))
-
-    # Rule 2: If it's warm and rainy, then don't go for a picnic (certainty factor 0.6)
-    rules.append(("Don't go for a picnic", min(warm, rainy), 0.6))
-
-    return rules
-
-# Combine evidence using certainty factors
-def combine_evidence(rules):
-    numerator = 0
-    denominator = 0
-
+# Function to calculate the winner based on certainty factors
+def calculate_winner(rules, conditions):
+    cf_values = {}  # Dictionary to store certainty factors for sports
     for rule in rules:
-        conclusion, support, certainty_factor = rule
-        numerator += support * certainty_factor
-        denominator += support
-
-    if denominator == 0:
-        return None
-
-    final_certainty_factor = numerator / denominator
-    return final_certainty_factor
-
-# Main function to make a decision
-def make_decision(temperature, forecast):
-    rules = apply_rules(temperature, forecast)
-    certainty_factor = combine_evidence(rules)
-
-    if certainty_factor is None:
-        return "Cannot make a decision"
-    elif certainty_factor >= 0.5:
-        return "Go for a picnic"
+        condition_met = all(cond in conditions for cond in rule.condition)
+        if condition_met:
+            cf_values[rule.conclusion] = rule.cf
+    
+    # Determine the winner based on the highest certainty factor
+    if cf_values:
+        winner = max(cf_values, key=cf_values.get)
+        certainty_factor = cf_values[winner]
+        return winner, certainty_factor
     else:
-        return "Don't go for a picnic"
+        return None, 0
 
-# Test the decision-making process
-temperature = 65  # Example temperature
-forecast = 60    # Example weather forecast
+# Collect inputs for each sport
+sports_rules = []
+for _ in range(4):
+    sport_name = input("Enter sport name: ").strip()
+    indoor_outdoor = input("Indoor or outdoor? ").strip().lower()
+    team_individual = input("Team sport or individual sport? ").strip().lower()
+    
+    cf = float(input("Enter certainty factor (between 0 and 1): "))
+    
+    # Validate certainty factor
+    while cf < 0 or cf > 1:
+        print("Certainty factor must be between 0 and 1.")
+        cf = float(input("Enter certainty factor (between 0 and 1): "))
+    
+    sports_rules.append(CertaintyFactorRule([indoor_outdoor, team_individual], sport_name, cf))
 
-decision = make_decision(temperature, forecast)
-print(f"Decision: {decision}")
+# Ask for the desired sport and playing conditions
+desired_indoor_outdoor = input("Indoor or outdoor? ").strip().lower()
+desired_team_individual = input("Team sport or individual sport? ").strip().lower()
+
+# Calculate the winner based on the given input
+winner, certainty_factor = calculate_winner(sports_rules, [desired_indoor_outdoor, desired_team_individual])
+
+# Print the winner and the certainty factor for the winner
+if winner:
+    print(f"The best sport for you is: {winner} with a certainty factor of {certainty_factor}")
+else:
+    print("No suitable sport found based on the given conditions.")

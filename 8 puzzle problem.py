@@ -33,7 +33,7 @@ def bfs(initial_state):
     queue = deque([(initial_state, [])])
 
     while queue:
-        state, path = queue.popleft()-
+        state, path = queue.popleft()
         visited.add(tuple(state))
 
         if state == goal_state:
